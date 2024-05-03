@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:13
+    ports:
+      - 5432:5432
+    volumes:
+      - ~/postgres-db-volume:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=collab
+      - POSTGRES_USER=collab
+      - POSTGRES_DB=collab
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "collab"]
+      interval: 5s
+      retries: 5
+    restart: always
+
+  backend: 
+    container_name: backend
+    restart: always
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "
+              python3 manage.py makemigrations &&
+              python3 manage.py migrate &&
+              python3 manage.py runserver 0.0.0.0:8000
+            "
+    depends_on:
+      - postgres
+
+  frontend:
+    container_name: frontend
+    restart: always
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - backend
