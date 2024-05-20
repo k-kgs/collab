@@ -1,6 +1,6 @@
 import os
 from django.shortcuts import render
-
+import json
 from rest_framework import status
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -45,6 +45,7 @@ class UserRegistration(APIView):
 
     def post(self, request, format=None):
         try:
+            print("request received:",request.data)
             is_success = False
             message = "Bad Request"
             serializer = UserSerializer(data=request.data)
@@ -79,6 +80,7 @@ class UserRegistration(APIView):
             )            
         
         except Exception as ex:
+            print("Exception while registering user:",ex.__str__())
             return Response(
                 {
                     "is_success": False,
@@ -90,6 +92,7 @@ class UserRegistration(APIView):
 
 class UserLogin(APIView):
     def post(self, request, format=None):
+        print("request received", (request.data))
         username = request.data.get('username')
         password = request.data.get('password')
         user = None
@@ -104,14 +107,13 @@ class UserLogin(APIView):
 
         if user:
             token, _ = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_200_OK)
+            return Response({'payload':{'token': token.key}}, status=status.HTTP_200_OK)
 
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
     
 class UserDetails(APIView):
     def get(self, request, format=None):
-        print(request.headers)
-        print(request.user)
+        print("request received",request)
         if not request.user.is_authenticated:
             return Response(
                 {
@@ -121,11 +123,14 @@ class UserDetails(APIView):
                 },
                 status=status.HTTP_401_UNAUTHORIZED
             )
+        user = request.user
         return Response(
                     {
                         "is_success": True,
                         "message": "user details for " + request.user.email,
-                        "data": None
+                        "data": {
+                            "username": str(user)
+                        }
                     },
                     status=status.HTTP_200_OK
                 )

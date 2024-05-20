@@ -32,3 +32,4 @@ yarn-error.log*
 .nvmrc
 __pycache__
 service_config
+/venv

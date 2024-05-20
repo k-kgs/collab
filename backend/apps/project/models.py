@@ -18,6 +18,12 @@ class Project(models.Model):
         default="-",
         db_index=True
     )
+    start_date = models.DateField(_("Start Date"), null=False)
+    estimated_delivery_date = models.DateField(_("End Date"), null=False)
+    is_active = models.BooleanField(
+        _("Active"),
+        default=True
+    )
     date_created = models.DateTimeField(_("Date Created"), auto_now_add=True)
     date_updated = models.DateTimeField(_("Date Updated"), auto_now=True)
 
@@ -39,5 +45,9 @@ class ProjectUserMapping(models.Model):
         on_delete=models.CASCADE
     )
     is_owner = models.BooleanField(default=False, null=False, blank=False)
+    is_active = models.BooleanField(
+        _("Active"),
+        default=True
+    )
     date_created = models.DateTimeField(_("Date Created"), auto_now_add=True)
     date_updated = models.DateTimeField(_("Date Updated"), auto_now=True)
